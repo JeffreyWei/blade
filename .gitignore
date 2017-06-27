@@ -124,3 +124,6 @@ local.properties
 .scala_dependencies
 .worksheet
 
+*.iml
+.idea
+target

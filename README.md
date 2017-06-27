@@ -69,7 +69,7 @@ Run it and point your browser to [http://localhost:9000](http://localhost:9000).
 
 ```java
 public static void main(String[] args) {
-    Blade blade = Blade.of();
+    Blade blade = Blade.me();
     blade.get("/user/21", getxxx);
     blade.post("/save", postxxx);
     blade.delete("/del/21", deletexxx);
@@ -81,7 +81,7 @@ public static void main(String[] args) {
 
 ```java
 public static void main(String[] args) {
-    Blade blade = Blade.of();
+    Blade blade = Blade.me();
     blade.get("/user/:uid", (request, response) -> {
 		Integer uid = request.queryInt("uid").get();
 		response.text("uid : " + uid);
@@ -102,7 +102,7 @@ public static void main(String[] args) {
 
 ```java
 public static void main(String[] args) {
-    Blade blade = Blade.of();
+    Blade blade = Blade.me();
     blade.get("/user", (request, response) -> {
 		Integer uid = request.queryInt("uid").get();
 		response.text("uid : " + uid);
@@ -126,7 +126,7 @@ public void upload_img(@MultipartParam FileItem fileItem){
 
 ```java
 public static void main(String[] args) {
-    Blade blade = Blade.of();
+    Blade blade = Blade.me();
     blade.before("/.*", (request, response) -> {
         System.out.println("before...");
     }).start();

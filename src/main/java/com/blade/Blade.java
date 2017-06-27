@@ -35,42 +35,53 @@ import static com.blade.mvc.Const.*;
 @Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Blade {
-
+    //启动状态
     private boolean started = false;
 
     private RouteMatcher routeMatcher = new RouteMatcher();
     private NettyServer nettyServer = new NettyServer();
+    //QW 作用
     private Class<?> bootClass;
 
     private List<WebHook> middlewares = new ArrayList<>();
 
+    //插件？
     private Set<String> pkgs = new LinkedHashSet<>(Arrays.asList(PLUGIN_PACKAGE_NAME));
+    //静态资源
     private Set<String> statics = new HashSet<>(Arrays.asList("/favicon.ico", "/static/", "/upload/", "/webjars/"));
-
+    //QW 待查看IOC实现
     private Ioc ioc = new SimpleIoc();
+    //渲染类
     private TemplateEngine templateEngine = new DefaultEngine();
-
+    //设置环境变量
     private Environment environment = Environment.empty();
-
+    //管理事件，事件触发
     private EventManager eventManager = new EventManager();
+    //session管理
     private SessionManager sessionManager = new SessionManager();
-
+    //异常梳理
     private Consumer<Exception> startupExceptionHandler = (e) -> log.error("Failed to start Blade", e);
-
+    //启动服务使用的线程
     private CountDownLatch latch = new CountDownLatch(1);
 
-    public static Blade of() {
-        return new Blade();
-    }
+    //貌似没有区别移除一个
+//    public static Blade of() {
+//        return new Blade();
+//    }
 
     public static Blade me() {
         return new Blade();
     }
 
+    /**
+     * 返回IOC模块
+     * @return
+     */
     public Ioc ioc() {
         return ioc;
     }
 
+    /////////////////////////////////请求处理
     public Blade get(@NonNull String path, @NonNull RouteHandler handler) {
         routeMatcher.addRoute(path, handler, HttpMethod.GET);
         return this;
@@ -100,6 +111,7 @@ public class Blade {
         routeMatcher.addRoute(path, handler, HttpMethod.AFTER);
         return this;
     }
+    /////////////////////////////////
 
     public Blade templateEngine(@NonNull TemplateEngine templateEngine) {
         this.templateEngine = templateEngine;
@@ -124,25 +136,50 @@ public class Blade {
         return this;
     }
 
+    /**
+     * 加载静态资源
+     * @param folders
+     * @return
+     */
     public Blade addStatics(@NonNull String... folders) {
         statics.addAll(Arrays.asList(folders));
         return this;
     }
 
+    /**
+     * 设置了一个环境变量
+     * QW 用途
+     * @param fileList
+     * @return
+     */
     public Blade showFileList(boolean fileList) {
         this.environment(ENV_KEY_STATIC_LIST, fileList);
         return this;
     }
 
+    /**
+     * 是否启用gzip压缩
+     * @param gzipEnable
+     * @return
+     */
     public Blade gzip(boolean gzipEnable) {
         this.environment(ENV_KEY_GZIP_ENABLE, gzipEnable);
         return this;
     }
 
+    /**
+     * 从容器中获取对象
+     * @param cls
+     * @return
+     */
     public Object getBean(@NonNull Class<?> cls) {
         return ioc.getBean(cls);
     }
 
+    /**
+     * 设置为开发模式
+     * @return
+     */
     public boolean devMode() {
         return environment.getBoolean(ENV_KEY_DEV_MODE, true);
     }
@@ -155,6 +192,10 @@ public class Blade {
         return this;
     }
 
+    /**
+     *
+     * @return
+     */
     public Class<?> bootClass() {
         return this.bootClass;
     }
@@ -173,6 +214,11 @@ public class Blade {
         return statics;
     }
 
+    /**
+     * 设置扫描的包
+     * @param pkgs
+     * @return
+     */
     public Blade scanPackages(@NonNull String... pkgs) {
         this.pkgs.addAll(Arrays.asList(pkgs));
         return this;
@@ -187,6 +233,12 @@ public class Blade {
         return this;
     }
 
+    /**
+     * 设置环境变量
+     * @param key
+     * @param value
+     * @return
+     */
     public Blade environment(@NonNull String key, @NonNull Object value) {
         environment.set(key, value);
         return this;
@@ -196,12 +248,23 @@ public class Blade {
         return environment;
     }
 
+    /**
+     * 设置监听端口
+     * @param port
+     * @return
+     */
     public Blade listen(int port) {
         Assert.greaterThan(port, 0, "server port not is negative number.");
         this.environment(ENV_KEY_SERVER_PORT, port);
         return this;
     }
 
+    /**
+     * 设置监听端口、地址
+     * @param address
+     * @param port
+     * @return
+     */
     public Blade listen(@NonNull String address, int port) {
         Assert.greaterThan(port, 0, "server port not is negative number.");
         this.environment(ENV_KEY_SERVER_ADDRESS, address);
@@ -220,11 +283,22 @@ public class Blade {
         return this.middlewares;
     }
 
+    /**
+     * 设置应用名称
+     * @param appName
+     * @return
+     */
     public Blade appName(@NonNull String appName) {
         this.environment(ENV_KEY_APP_NAME, appName);
         return this;
     }
 
+    /**
+     * 添加监听
+     * @param eventType
+     * @param eventListener
+     * @return
+     */
     public Blade event(@NonNull EventType eventType, @NonNull EventListener eventListener) {
         eventManager.addEventListener(eventType, eventListener);
         return this;
@@ -238,6 +312,10 @@ public class Blade {
         return sessionManager;
     }
 
+    /**
+     * 销毁session管理对象
+     * @return
+     */
     public Blade disableSession() {
         this.sessionManager = null;
         return this;
@@ -247,10 +325,24 @@ public class Blade {
         return this.start(null, DEFAULT_SERVER_ADDRESS, DEFAULT_SERVER_PORT, null);
     }
 
+    /**
+     * 指定启动类及启动参数
+     * @param mainCls
+     * @param args
+     * @return
+     */
     public Blade start(Class<?> mainCls, String... args) {
         return this.start(mainCls, DEFAULT_SERVER_ADDRESS, DEFAULT_SERVER_PORT, args);
     }
 
+    /**
+     * 启动应用服务
+     * @param bootClass
+     * @param address
+     * @param port
+     * @param args
+     * @return
+     */
     public Blade start(Class<?> bootClass, @NonNull String address, int port, String... args) {
         try {
             Assert.greaterThan(port, 0, "server port not is negative number.");
@@ -274,6 +366,19 @@ public class Blade {
         return this;
     }
 
+    /**
+     * 停止服务
+     */
+    public void stop() {
+        eventManager.fireEvent(EventType.SERVER_STOPPING, this);
+        nettyServer.stop();
+        eventManager.fireEvent(EventType.SERVER_STOPPED, this);
+    }
+
+    /**
+     * 等待服务停止
+     * @return
+     */
     public Blade await() {
         if (!started) {
             throw new IllegalStateException("Server hasn't been started. Call start() before calling this method.");
@@ -285,12 +390,6 @@ public class Blade {
             Thread.currentThread().interrupt();
         }
         return this;
-    }
-
-    public void stop() {
-        eventManager.fireEvent(EventType.SERVER_STOPPING, this);
-        nettyServer.stop();
-        eventManager.fireEvent(EventType.SERVER_STOPPED, this);
     }
 
 }
