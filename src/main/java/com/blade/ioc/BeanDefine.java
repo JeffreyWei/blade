@@ -1,5 +1,7 @@
 package com.blade.ioc;
 
+import lombok.Data;
+
 /**
  * Bean Define, IOC to define a target
  *

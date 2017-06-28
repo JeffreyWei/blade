@@ -1,7 +1,6 @@
 package com.blade.ioc;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
 
@@ -11,9 +10,8 @@ import java.util.*;
  * @author <a href="mailto:biezhi.me@gmail.com" target="_blank">biezhi</a>
  * @since 1.5
  */
+@Slf4j
 public class SimpleIoc implements Ioc {
-
-    private static final Logger log = LoggerFactory.getLogger(Ioc.class);
 
     private final Map<String, BeanDefine> pool = new HashMap<>(32);
 
@@ -39,7 +37,7 @@ public class SimpleIoc implements Ioc {
         BeanDefine beanDefine = new BeanDefine(bean);
         addBean(name, beanDefine);
 
-        // add interface
+        // add interface,如果有实现接口把接口对应的对象添加到上下文中
         Class<?>[] interfaces = beanDefine.getType().getInterfaces();
         if (interfaces.length > 0) {
             for (Class<?> interfaceClazz : interfaces) {

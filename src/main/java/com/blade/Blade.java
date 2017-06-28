@@ -49,7 +49,7 @@ public class Blade {
     private Set<String> pkgs = new LinkedHashSet<>(Arrays.asList(PLUGIN_PACKAGE_NAME));
     //静态资源
     private Set<String> statics = new HashSet<>(Arrays.asList("/favicon.ico", "/static/", "/upload/", "/webjars/"));
-    //QW 待查看IOC实现
+    //注入管理
     private Ioc ioc = new SimpleIoc();
     //渲染类
     private TemplateEngine templateEngine = new DefaultEngine();
